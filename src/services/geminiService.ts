@@ -1,8 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Fix: The API key must be obtained from `process.env.API_KEY` and used directly.
-// This resolves the TypeScript error regarding `import.meta.env` and aligns with the guidelines.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Obtener la API key de las variables de entorno de Vite
+const apiKey = import.meta.env.VITE_API_KEY;
+
+if (!apiKey) {
+    throw new Error("VITE_API_KEY is not defined in environment variables");
+}
+
+const ai = new GoogleGenAI({ apiKey });
 
 const buildPrompt = (spanishText: string, englishText: string): string => {
     return `
@@ -106,7 +111,7 @@ export const mergeDocuments = async (spanishText: string, englishText: string): 
         const prompt = buildPrompt(spanishText, englishText);
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-2.0-flash-exp',
             contents: prompt,
             config: {
                 temperature: 0.1, // Lower temperature for more deterministic, rule-based output
