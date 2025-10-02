@@ -6,12 +6,12 @@ export const Header: React.FC = () => {
             <div className="relative inline-block mb-2">
                 <div className="absolute inset-0 blur-xl bg-gradient-to-r from-indigo-600 to-cyan-600 opacity-20"></div>
                 <h1 className="relative text-2xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-gradient-animate">
-                    Bilingual Bible Study Merger
+                    Fusión de Estudios Bíblicos Bilingües
                 </h1>
             </div>
 
             <p className="text-sm md:text-base text-slate-300 font-light mb-3">
-                ✨ AI-Powered Document Formatting
+                ✨ Formateo de Documento con Motor-IA
             </p>
 
             <div className="flex flex-wrap justify-center gap-2 text-xs text-slate-400 mb-3">

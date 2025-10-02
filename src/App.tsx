@@ -157,7 +157,7 @@ function App() {
 
         {/* Footer */}
         <footer className="text-center pt-3 pb-2 text-slate-500 text-xs">
-          <p>Powered by Google Gemini AI ✨</p>
+          <p>Created by MM - Powered by Google Gemini AI ✨</p>
         </footer>
       </div>
     </div>
