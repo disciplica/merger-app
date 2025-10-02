@@ -1,0 +1,16 @@
+# Node modules (si usas Node.js)
+node_modules/
+.env
+.env.local
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de build
+dist/
+build/
+.next/
+
+# Otros
+*.log
