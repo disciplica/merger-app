@@ -1,7 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 
-// The API key is defined in vite.config.ts and securely replaced during the build process.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = import.meta.env.VITE_API_KEY as string;
+
+if (!apiKey) {
+    console.warn("⚠️ VITE_API_KEY no está configurada.");
+}
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 const buildPrompt = (spanishHtml: string, englishHtml: string): string => {
     return `
@@ -115,6 +119,9 @@ Now, generate the merged Markdown document. Output ONLY the final Markdown conte
 }
 
 export const mergeDocuments = async (spanishHtml: string, englishHtml: string): Promise<string> => {
+    if (!ai) {
+        throw new Error("API Key not configured. Please add VITE_API_KEY to environment variables.");
+    }
     try {
         const prompt = buildPrompt(spanishHtml, englishHtml);
 
