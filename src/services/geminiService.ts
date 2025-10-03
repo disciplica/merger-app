@@ -1,37 +1,40 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Obtener la API key de las variables de entorno de Vite
-const apiKey = import.meta.env.VITE_API_KEY;
+// The API key is defined in vite.config.ts and securely replaced during the build process.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-if (!apiKey) {
-    throw new Error("VITE_API_KEY is not defined in environment variables");
-}
-
-const ai = new GoogleGenAI({ apiKey });
-
-const buildPrompt = (spanishText: string, englishText: string): string => {
+const buildPrompt = (spanishHtml: string, englishHtml: string): string => {
     return `
-You are an expert document formatter. Your task is to merge a Spanish bible study guide and its English translation into a single, bilingual Markdown document. You must follow the provided formatting rules with extreme precision. The Spanish content should always come before the English content in each section.
+You are a meticulous HTML-to-Markdown converter. Your single task is to merge a Spanish bible study guide and its English translation, provided as HTML snippets, into one bilingual Markdown file. You must follow EVERY rule below with absolute precision.
 
-**Formatting Rules:**
+---
+**CRITICAL HTML-TO-MARKDOWN CONVERSION RULES**
+---
 
-1.  **Markdown Styles:**
-    *   Bold: **text**
-    *   Italic: *text*
-    *   Bold and Italic: ***text***
-    *   Underline: _text_
+**RULE 1: MARKDOWN STYLES FROM HTML TAGS**
+*   You will receive HTML. You MUST convert the following HTML tags to Markdown:
+    *   \`<b>text</b>\` or \`<strong>text</strong>\` becomes \`**text**\`
+    *   \`<i>text</i>\` or \`<em>text</em>\` becomes \`*text* \`
+    *   A combination of bold and italic tags becomes \`***text***\`
+    *   \`<u>text</u>\` becomes \`_text_\`
+*   This is your most important formatting task. Do not miss any tags.
 
-2.  **Bullet Indentation:**
-    *   First level: \`- text\` (no spaces before)
-    *   Second level: \`  • text\` (2 spaces before)
-    *   Third level: \`    • text\` (4 spaces before)
+**RULE 2: BULLET INDENTATION FROM HTML LISTS**
+*   You will receive lists as \`<ul>\` and \`<li>\` tags.
+*   A top-level \`<ul>\` is the first level of indentation. Render its \`<li>\` items as \`- text\`.
+*   A nested \`<ul>\` inside an \`<li>\` is a second level. Render its items as \`  • text\` (2 spaces before).
+*   A further nested \`<ul>\` is a third level. Render its items as \`    • text\` (4 spaces before).
+*   Preserve this structure exactly.
 
-3.  **Fill-in-the-blanks and Textareas:**
-    *   For blank lines for users to fill in, use \`[input:es-#:__________]\` for Spanish and \`[input:en-#:__________]\` for English. The \`#\` must be a single, sequential number for all inputs throughout the entire document, starting from 1.
-    *   For textarea boxes, use \`[textarea:es-#]\` for Spanish and \`[textarea:en-#]\` for English. The \`#\` must be a separate, sequential number for all textareas throughout the entire document, starting from 1.
-    *   The prayer section's textarea is special: use \`[textarea:es-prayer-notes]\` for Spanish and \`[textarea:en-prayer-notes]\` for English.
+**RULE 3: FILL-IN-THE-BLANKS AND TEXTAREAS**
+*   A "line to fill in" in the source HTML will appear as an empty paragraph: \`<p></p>\` or a line of underscores.
+*   Convert these to \`[input:es-#:__________]\` for Spanish and \`[input:en-#:__________]\` for English. The \`#\` is a single sequential number for ALL inputs in the document, starting from 1.
+*   Convert textareas to \`[textarea:es-#]\` and \`[textarea:en-#]\`. The \`#\` is a separate sequential number for textareas.
+*   Prayer textareas are special: \`[textarea:es-prayer-notes]\` and \`[textarea:en-prayer-notes]\`.
 
-4.  **Document Structure:**
+**RULE 4: DOCUMENT STRUCTURE**
+*   Follow this structure precisely. Spanish content always comes first within each section.
+
     *   **Header:**
         Guía de Estudio Bíblico
         Lección [número]
@@ -57,27 +60,23 @@ You are an expert document formatter. Your task is to merge a Spanish bible stud
         Introduction:
         [Contenido de la introducción en inglés]
 
-    *   **Main Sections (can be 1 or more):** For each section, format as follows:
+    *   **Main Sections (1 or more):**
         [Título completo de la sección en español]
         #### [1. Subtítulo sin negrita]
         [Contenido con bullets y [input]s]
-        #### [2. Subtítulo sin negrita]
-        [Contenido con bullets y [input]s]
-        (Repeat for all Spanish subtitles in the section)
+        (Repeat for all Spanish subtitles)
 
         [Título completo de la sección en ingles]
         #### [1. Subtítulo sin negrita]
         [Contenido con bullets y [input]s]
-        #### [2. Subtítulo sin negrita]
-        [Contenido con bullets y [input]s]
-        (Repeat for all English subtitles in the section)
+        (Repeat for all English subtitles)
 
     *   **Conclusion Section:**
         ### CONCLUSIÓN:
         Conclusión:
         #### Reflexión General:
         [Contenido reflexión español]
-        [textarea:es-#] (continue textarea numbering)
+        [textarea:es-#]
 
         #### Oración:
         [Contenido oración español]
@@ -86,39 +85,48 @@ You are an expert document formatter. Your task is to merge a Spanish bible stud
         Conclusion:
         #### General Reflection:
         [Contenido reflexión inglés]
-        [textarea:en-#] (continue textarea numbering)
+        [textarea:en-#]
 
         #### Prayer:
         [Contenido oración inglés]
         [textarea:en-prayer-notes]
 
-**Input Documents:**
+---
+**FINAL VERIFICATION CHECKLIST**
+Before you output the final text, review your work against these questions.
+1.  Did I convert EVERY SINGLE \`<b>\`, \`<i>\`, and \`<u>\` tag to its correct Markdown style?
+2.  Did I convert EVERY SINGLE empty paragraph (\`<p></p>\`) to an \`[input:...]\` tag?
+3.  Did I correctly indent ALL list items based on nested \`<ul>\` tags?
+4.  Is the final structure EXACTLY as specified?
+---
+
+**Input Documents (as HTML):**
 
 --- SPANISH DOCUMENT START ---
-${spanishText}
+${spanishHtml}
 --- SPANISH DOCUMENT END ---
 
 --- ENGLISH DOCUMENT START ---
-${englishText}
+${englishHtml}
 --- ENGLISH DOCUMENT END ---
 
-Now, generate the merged Markdown document based on all the rules and the provided texts. Do not include any explanations, warnings, or apologies. Output ONLY the final Markdown content.
+Now, generate the merged Markdown document. Output ONLY the final Markdown content without any explanations.
     `;
 }
 
-export const mergeDocuments = async (spanishText: string, englishText: string): Promise<string> => {
+export const mergeDocuments = async (spanishHtml: string, englishHtml: string): Promise<string> => {
     try {
-        const prompt = buildPrompt(spanishText, englishText);
+        const prompt = buildPrompt(spanishHtml, englishHtml);
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash-exp',
+            model: 'gemini-2.5-flash', // Upgraded to stable and powerful model
             contents: prompt,
             config: {
-                temperature: 0.1, // Lower temperature for more deterministic, rule-based output
+                temperature: 0.05, // Lowered temperature for maximum rule adherence
             }
         });
 
-        const mergedText = response.text || '';
+        const mergedText = response.text;
 
         // Final cleanup to remove potential code block fences
         return mergedText.replace(/^```markdown\s*/, '').replace(/```$/, '').trim();

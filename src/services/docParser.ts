@@ -8,9 +8,10 @@ export const extractTextFromDocx = (file: File): Promise<string> => {
             if (!arrayBuffer) {
                 return reject(new Error("Failed to read file."));
             }
-            mammoth.extractRawText({ arrayBuffer })
+            // Convert to HTML to preserve formatting like bold, italics, and lists
+            mammoth.convertToHtml({ arrayBuffer })
                 .then(result => {
-                    resolve(result.value);
+                    resolve(result.value); // The value is the HTML of the document
                 })
                 .catch(err => {
                     const message = err instanceof Error ? err.message : String(err);
