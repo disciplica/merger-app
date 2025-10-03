@@ -126,7 +126,7 @@ export const mergeDocuments = async (spanishHtml: string, englishHtml: string): 
             }
         });
 
-        const mergedText = response.text;
+        const mergedText = response.text || '';
 
         // Final cleanup to remove potential code block fences
         return mergedText.replace(/^```markdown\s*/, '').replace(/```$/, '').trim();
